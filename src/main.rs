@@ -1,4 +1,15 @@
+#[macro_use]
+extern crate lazy_static;
 use std::collections::HashMap;
+
+lazy_static! {
+    static ref REPLACEMENTS: HashMap<&'static str, &'static str> = {
+        let mut m = HashMap::new();
+        m.insert("AVE", "AVENUE");
+        m.insert("ST", "STREET");
+        m
+    };
+}
 
 fn clean_address(address: &str, replacements: &HashMap<&str, &str>) -> String {
     address
@@ -9,15 +20,7 @@ fn clean_address(address: &str, replacements: &HashMap<&str, &str>) -> String {
 }
 
 fn main() {
-    // Prepare the replacements mapping
-    let mut replacements = HashMap::new();
-    replacements.insert("AVE", "AVENUE");
-    replacements.insert("ST", "STREET");
-    replacements.insert("RD", "ROAD");
-
-    // Test address
     let address = "123 MAIN ST";
-
-    let cleaned_address = clean_address(address, &replacements);
-    println!("Cleaned address: {}", cleaned_address); // Output should be "123 MAIN STREET"
+    let cleaned_address = clean_address(address, &REPLACEMENTS);
+    println!("Cleaned address: {}", cleaned_address);
 }
