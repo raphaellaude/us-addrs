@@ -12,9 +12,13 @@ lazy_static! {
 }
 
 pub fn clean_address(address: &str, replacements: &HashMap<&str, &str>) -> String {
+    // periods, hyphens, and slashes are significant and should not be removed
+    // except for hyphens in place names, which should be replaced with a space
+    let included_nonalphanum: [char; 3] = ['-', '.', '/'];
+
     let cleaned: String = address
         .chars()
-        .filter(|&c| c.is_alphanumeric() || c.is_whitespace())
+        .filter(|&c| c.is_alphanumeric() || c.is_whitespace() || included_nonalphanum.contains(&c))
         .collect();
 
     let uppercased = cleaned.to_uppercase();
