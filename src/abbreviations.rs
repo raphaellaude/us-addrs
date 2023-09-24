@@ -2,8 +2,9 @@ pub mod constants {
     use std::collections::HashMap;
 
     lazy_static! {
-        pub static ref STREET_SUFFIX_ABBREVS: HashMap<&'static str, &'static str> = {
+        pub static ref SINGLE_WORD_ABBREVS: HashMap<&'static str, &'static str> = {
             let mut m = HashMap::new();
+            // USPS Street Abbreviations (C1)
             m.insert("ALLEY", "ALY");
             m.insert("ANEX", "ANX");
             m.insert("ARCADE", "ARC");
@@ -511,6 +512,82 @@ pub mod constants {
             m.insert("VSTA", "VIS");
             m.insert("WY", "WAY");
             m.insert("WLS", "WLS");
+            // USPS Two–Letter State and Possession Abbreviations (Appendix B)
+            // Geographical Directional
+            m.insert("NORTH", "N");
+            m.insert("NORTHEAST", "NE");
+            m.insert("NORTHWEST", "NW");
+            m.insert("SOUTH", "S");
+            m.insert("SOUTHEAST", "SE");
+            m.insert("SOUTHWEST", "SW");
+            m.insert("EAST", "E");
+            m.insert("WEST", "W");
+            m
+        };
+    }
+
+    lazy_static! {
+        pub static ref PHRASE_ABBREVS: HashMap<&'static str, &'static str> = {
+            let mut m = HashMap::new();
+            m.insert("ALABAMA", "AL");
+            m.insert("ALASKA", "AK");
+            m.insert("AMERICAN SAMOA", "AS");
+            m.insert("ARIZONA", "AZ");
+            m.insert("ARKANSAS", "AR");
+            m.insert("CALIFORNIA", "CA");
+            m.insert("COLORADO", "CO");
+            m.insert("CONNECTICUT", "CT");
+            m.insert("DELAWARE", "DE");
+            m.insert("DISTRICT OF COLUMBIA", "DC");
+            m.insert("FEDERATED STATES OF MICRONESIA", "FM");
+            m.insert("FLORIDA", "FL");
+            m.insert("GEORGIA", "GA");
+            m.insert("GUAM", "GU");
+            m.insert("HAWAII", "HI");
+            m.insert("IDAHO", "ID");
+            m.insert("ILLINOIS", "IL");
+            m.insert("INDIANA", "IN");
+            m.insert("IOWA", "IA");
+            m.insert("KANSAS", "KS");
+            m.insert("KENTUCKY", "KY");
+            m.insert("LOUISIANA", "LA");
+            m.insert("MAINE", "ME");
+            m.insert("MARSHALL ISLANDS", "MH");
+            m.insert("MARYLAND", "MD");
+            m.insert("MASSACHUSETTS", "MA");
+            m.insert("MICHIGAN", "MI");
+            m.insert("MINNESOTA", "MN");
+            m.insert("MISSISSIPPI", "MS");
+            m.insert("MISSOURI", "MO");
+            m.insert("MONTANA", "MT");
+            m.insert("NEBRASKA", "NE");
+            m.insert("NEVADA", "NV");
+            m.insert("NEW HAMPSHIRE", "NH");
+            m.insert("NEW JERSEY", "NJ");
+            m.insert("NEW MEXICO", "NM");
+            m.insert("NEW YORK", "NY");
+            m.insert("NORTH CAROLINA", "NC");
+            m.insert("NORTH DAKOTA", "ND");
+            m.insert("NORTHERN MARIANA ISLANDS", "MP");
+            m.insert("OHIO", "OH");
+            m.insert("OKLAHOMA", "OK");
+            m.insert("OREGON", "OR");
+            m.insert("PALAU", "PW");
+            m.insert("PENNSYLVANIA", "PA");
+            m.insert("PUERTO RICO", "PR");
+            m.insert("RHODE ISLAND", "RI");
+            m.insert("SOUTH CAROLINA", "SC");
+            m.insert("SOUTH DAKOTA", "SD");
+            m.insert("TENNESSEE", "TN");
+            m.insert("TEXAS", "TX");
+            m.insert("UTAH", "UT");
+            m.insert("VERMONT", "VT");
+            m.insert("VIRGIN ISLANDS", "VI");
+            m.insert("VIRGINIA", "VA");
+            m.insert("WASHINGTON", "WA");
+            m.insert("WEST VIRGINIA", "WV");
+            m.insert("WISCONSIN", "WI");
+            m.insert("WYOMING", "WY");
             m
         };
     }

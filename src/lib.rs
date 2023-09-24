@@ -7,7 +7,7 @@ use std::collections::HashMap;
 mod abbreviations;
 use unicode_normalization::UnicodeNormalization;
 
-pub use crate::abbreviations::constants::STREET_SUFFIX_ABBREVS;
+pub use crate::abbreviations::constants::{PHRASE_ABBREVS, SINGLE_WORD_ABBREVS};
 
 pub fn remove_insignificant_punctuation(address: &str) -> String {
     let included_nonalphanum: [char; 3] = ['-', '.', '/'];
@@ -45,7 +45,17 @@ pub fn remove_insignificant_punctuation(address: &str) -> String {
     output
 }
 
+/// Cleans a U.S. Address, applying the following transformations:
+/// - All characters are converted to uppercase
+/// - Extra whitespace is removed
+/// - All non-ascii characters are removed
+/// - All punctuation is removed, except for periods, hyphens, and slashes EXCEPT when
+///  they are surrounded by numbers, in which case they are retained
+/// - Single word street and geographic abbreviations are applied, e.g. "STREET" -> "ST",
+/// "AVENUE" -> "AVE", "NORTH" -> "N", "SOUTHWEST" -> "SW", etc.
 pub fn clean_address(address: &str, replacements: &HashMap<&str, &str>) -> String {
+    let address: String = address.to_uppercase();
+
     let address: String = address
         .trim()
         .chars()
@@ -53,7 +63,6 @@ pub fn clean_address(address: &str, replacements: &HashMap<&str, &str>) -> Strin
         .collect();
 
     let address: String = remove_insignificant_punctuation(&address);
-    let address: String = address.to_uppercase();
 
     address
         .split_whitespace()
