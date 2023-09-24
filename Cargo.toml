@@ -7,3 +7,8 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4"
+regex = "1.9.5"
+unicode-normalization = "0.1.22"
+
+[dev-dependencies]
+criterion = "0.5.1"
