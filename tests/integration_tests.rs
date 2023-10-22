@@ -1,5 +1,7 @@
 use std::fs::read_to_string;
-use us_addrs::{clean_address, clean_addresses, parse, tokenize};
+use us_addrs::{
+    add_feature_context, clean_address, clean_addresses, get_token_features, parse, tokenize,
+};
 
 #[test]
 fn test_parse() {
@@ -8,6 +10,24 @@ fn test_parse() {
     for (i, line) in data.iter().enumerate() {
         let parsed = parse(line);
         println!("Test {}: Parsed address is {:?}", i + 1, parsed);
+    }
+}
+
+#[test]
+fn test_add_feature_context() {
+    let data = read_to_string("tests/test_addrs.txt").expect("Could not read file");
+    let data: Vec<&str> = data.lines().collect();
+    for addr in data {
+        let tokens = tokenize(addr);
+        let mut xseq = Vec::new();
+
+        for token in &tokens {
+            let features = get_token_features(&token);
+            xseq.push(features);
+        }
+
+        let xseq = add_feature_context(&mut xseq);
+        println!("Test: Feature context is {:?}", xseq);
     }
 }
 

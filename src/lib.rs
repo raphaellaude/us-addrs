@@ -18,11 +18,13 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
         xseq.push(features);
     }
 
-    if !xseq.is_empty() {
-        xseq[0].push(Attribute::new("address.start", 1f64));
-        xseq.last_mut()
-            .unwrap()
-            .push(Attribute::new("address.end", 1f64));
+    let xseq = add_feature_context(&mut xseq);
+
+    for (i, token) in tokens.iter().enumerate() {
+        println!("Token {}: {}", i + 1, token);
+        for attr in &xseq[i] {
+            println!("  {}: {}", attr.name, attr.value);
+        }
     }
 
     let buf = fs::read("model/usaddr.crfsuite").unwrap();
@@ -38,6 +40,49 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
         .collect()
 }
 
+pub fn add_feature_context(features: &mut Vec<Vec<Attribute>>) -> &mut Vec<Vec<Attribute>> {
+    if !features.is_empty() {
+        features[0].push(Attribute::new("address.start", 1f64));
+        features
+            .last_mut()
+            .unwrap()
+            .push(Attribute::new("address.end", 1f64));
+    }
+
+    let n_features = features.len();
+
+    // 1. Collect new attributes
+    let mut new_attributes = Vec::new();
+    for idx in 0..n_features {
+        let mut current_attrs = Vec::new();
+        if idx == 0 {
+            current_attrs.extend(get_new_attributes(&features[idx + 1], "next"));
+        } else if idx == 1 {
+            current_attrs.push(Attribute::new("previous.address.start", 1f64));
+        } else if idx == n_features - 2 {
+            current_attrs.push(Attribute::new("next.address.end", 1f64));
+        } else if idx == n_features - 1 {
+            current_attrs.extend(get_new_attributes(&features[idx - 1], "previous"));
+        } else {
+            current_attrs.extend(get_new_attributes(&features[idx + 1], "next"));
+            current_attrs.extend(get_new_attributes(&features[idx - 1], "previous"));
+        }
+        new_attributes.push(current_attrs);
+    }
+
+    for (idx, attrs) in new_attributes.into_iter().enumerate() {
+        features[idx].extend(attrs);
+    }
+    features
+}
+
+fn get_new_attributes(feature: &Vec<Attribute>, prefix: &str) -> Vec<Attribute> {
+    feature
+        .iter()
+        .map(|feature| Attribute::new(&format!("{}.{}", prefix, feature.name), feature.value))
+        .collect()
+}
+
 pub fn tokenize(address: &str) -> Vec<String> {
     let address: String = clean_address(address);
     let tokens: Vec<String> = address
@@ -48,7 +93,7 @@ pub fn tokenize(address: &str) -> Vec<String> {
     tokens
 }
 
-fn get_token_features(token: &str) -> Vec<Attribute> {
+pub fn get_token_features(token: &str) -> Vec<Attribute> {
     let n_chars = token.chars().count();
     let numeric_digits = token.chars().filter(|c| c.is_numeric()).count();
     let has_vowels = token.chars().any(|c| "aeiou".contains(c));
@@ -113,7 +158,7 @@ fn make_replacements(token: &str, replacements: &HashMap<&str, &str>) -> bool {
 /// - Single word street and geographic abbreviations are applied, e.g. "STREET" -> "ST",
 /// "AVENUE" -> "AVE", "NORTH" -> "N", "SOUTHWEST" -> "SW", etc.
 pub fn clean_address(address: &str) -> String {
-    let address: String = address.to_uppercase();
+    let address = address.to_uppercase();
 
     let address: String = address
         .trim()

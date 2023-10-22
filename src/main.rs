@@ -2,7 +2,7 @@ use clap::Parser;
 use us_addrs::parse;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(about = "Parse a U.S. address string into components")]
 struct Args {
     #[clap(short, long)]
     address: String,
