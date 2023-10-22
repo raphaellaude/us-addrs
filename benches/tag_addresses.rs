@@ -17,8 +17,6 @@ fn criterion_benchmark(c: &mut Criterion) {
         });
     });
 
-    // Similarly for "crfsuite" if you'd like to benchmark an alternate crate.
-
     group.finish();
 }
 
