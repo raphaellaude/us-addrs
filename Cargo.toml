@@ -1,5 +1,5 @@
 [package]
-name = "rust_addr_clean"
+name = "us_addrs"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,10 +8,24 @@ edition = "2021"
 [dependencies]
 lazy_static = "1.4"
 unicode-normalization = "0.1.22"
+crfs = "0.2"
+clap = { version = "4.4.6", features = ["derive"] }
 
 [dev-dependencies]
 criterion = "0.5.1"
 
+[lib]
+name = "us_addrs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "us_addrs"
+path = "src/main.rs"
+
 [[bench]]
 name = "clean_test_addresses"
+harness = false
+
+[[bench]]
+name = "tag_addresses"
 harness = false

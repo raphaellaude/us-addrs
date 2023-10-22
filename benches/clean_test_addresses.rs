@@ -1,13 +1,13 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use rust_addr_clean::{clean_address, clean_addresses, SINGLE_WORD_ABBREVS};
 use std::fs::read_to_string;
+use us_addrs::{clean_address, clean_addresses};
 
 fn clean_test_address(address: &str) {
-    clean_address(black_box(address), &SINGLE_WORD_ABBREVS);
+    clean_address(black_box(address));
 }
 
 fn clean_address_batch(addresses: Vec<&str>) {
-    clean_addresses(addresses, &SINGLE_WORD_ABBREVS);
+    clean_addresses(addresses);
 }
 
 fn bench(c: &mut Criterion) {
