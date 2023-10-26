@@ -9,7 +9,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let raw_data = fs::read_to_string("tests/us50.test.raw").unwrap();
     let data: Vec<&str> = raw_data.lines().collect();
 
-    group.bench_function("crfs", |b| {
+    group.bench_function("crfsuite", |b| {
         b.iter(|| {
             for address in &data {
                 let _parsed = parse(black_box(address));

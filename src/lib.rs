@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use std::fs;
 
-use crfs::Attribute;
+use crfsuite::Attribute;
 use unicode_normalization::UnicodeNormalization;
 mod abbreviations;
+pub mod train;
 
 use abbreviations::{DIRECTIONALS, STREET_NAMES};
 
@@ -27,8 +27,7 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
         }
     }
 
-    let buf = fs::read("model/usaddr.crfsuite").unwrap();
-    let model = crfs::Model::new(&buf).unwrap();
+    let model = crfsuite::Model::from_file("model/usaddr.crfsuite").unwrap();
 
     let mut tagger = model.tagger().unwrap();
     let _res = tagger.tag(&xseq).unwrap();
