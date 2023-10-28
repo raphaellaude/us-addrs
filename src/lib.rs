@@ -41,6 +41,13 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
     let tokens = tokenize(address);
     let xseq = get_address_features(&tokens);
 
+    for (token, features) in tokens.iter().zip(xseq.iter()) {
+        println!("Token: {}", token);
+        for feature in features {
+            println!("Feature: {:?}", feature);
+        }
+    }
+
     let model = crfsuite::Model::from_file("model/usaddr.crfsuite").unwrap();
 
     let mut tagger = model.tagger().unwrap();
@@ -189,11 +196,7 @@ fn make_replacements(token: &str, replacements: &HashMap<&str, &str>) -> bool {
 /// - All non-ascii characters are removed
 /// - All punctuation is removed, except for periods, hyphens, and slashes EXCEPT when
 ///  they are surrounded by numbers, in which case they are retained
-/// - Single word street and geographic abbreviations are applied, e.g. "STREET" -> "ST",
-/// "AVENUE" -> "AVE", "NORTH" -> "N", "SOUTHWEST" -> "SW", etc.
 pub fn clean_address(address: &str) -> String {
-    let address = address.to_uppercase();
-
     let address: String = address
         .trim()
         .chars()
