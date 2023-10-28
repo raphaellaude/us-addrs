@@ -26,7 +26,7 @@ fn test_add_feature_context() {
             xseq.push(features);
         }
 
-        let xseq = add_feature_context(&mut xseq);
+        let xseq = add_feature_context(xseq);
         println!("Test: Feature context is {:?}", xseq);
     }
 }

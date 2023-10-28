@@ -7,25 +7,39 @@ pub mod train;
 
 use abbreviations::{DIRECTIONALS, STREET_NAMES};
 
+pub enum Tag {
+    AddressNumberPrefix,
+    AddressNumber,
+    AddressNumberSuffix,
+    StreetNamePreModifier,
+    StreetNamePreDirectional,
+    StreetNamePreType,
+    StreetName,
+    StreetNamePostType,
+    StreetNamePostDirectional,
+    SubaddressType,
+    SubaddressIdentifier,
+    BuildingName,
+    OccupancyType,
+    OccupancyIdentifier,
+    CornerOf,
+    LandmarkName,
+    PlaceName,
+    StateName,
+    ZipCode,
+    USPSBoxType,
+    USPSBoxID,
+    USPSBoxGroupType,
+    USPSBoxGroupID,
+    IntersectionSeparator,
+    Recipient,
+    NotAddress,
+}
+
 /// Parse an unstructured U.S. address string into address components.
 pub fn parse(address: &str) -> Vec<(String, String)> {
     let tokens = tokenize(address);
-
-    let mut xseq = Vec::new();
-
-    for token in &tokens {
-        let features = get_token_features(&token);
-        xseq.push(features);
-    }
-
-    let xseq = add_feature_context(&mut xseq);
-
-    for (i, token) in tokens.iter().enumerate() {
-        println!("Token {}: {}", i + 1, token);
-        for attr in &xseq[i] {
-            println!("  {}: {}", attr.name, attr.value);
-        }
-    }
+    let xseq = get_address_features(&tokens);
 
     let model = crfsuite::Model::from_file("model/usaddr.crfsuite").unwrap();
 
@@ -34,12 +48,27 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
 
     tokens
         .into_iter()
-        .zip(_res.iter().cloned())
+        .zip(_res.iter())
         .map(|(token, tag)| (token, tag.to_string()))
         .collect()
 }
 
-pub fn add_feature_context(features: &mut Vec<Vec<Attribute>>) -> &mut Vec<Vec<Attribute>> {
+pub fn get_address_features(tokens: &Vec<String>) -> Vec<Vec<Attribute>> {
+    let mut xseq = Vec::new();
+
+    for token in tokens {
+        let features = get_token_features(token);
+        xseq.push(features);
+    }
+
+    let xseq = add_feature_context(xseq);
+
+    xseq
+}
+
+pub fn add_feature_context(features: Vec<Vec<Attribute>>) -> Vec<Vec<Attribute>> {
+    let mut features = features;
+
     if !features.is_empty() {
         features[0].push(Attribute::new("address.start", 1f64));
         features
