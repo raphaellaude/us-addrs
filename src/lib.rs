@@ -107,7 +107,7 @@ pub fn add_feature_context(features: Vec<Vec<Attribute>>) -> Vec<Vec<Attribute>>
 fn get_new_attributes(feature: &Vec<Attribute>, prefix: &str) -> Vec<Attribute> {
     feature
         .iter()
-        .map(|feature| Attribute::new(&format!("{}.{}", prefix, feature.name), feature.value))
+        .map(|feature| Attribute::new(&format!("{}_{}", prefix, feature.name), feature.value))
         .collect()
 }
 
@@ -125,6 +125,15 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
     let n_chars = token.chars().count();
     let numeric_digits = token.chars().filter(|c| c.is_numeric()).count();
     let has_vowels = token.chars().any(|c| "aeiou".contains(c));
+    let token_clean = token
+        .to_lowercase()
+        .chars()
+        .filter(|c| c.is_alphanumeric())
+        .collect::<String>();
+    let endsinpunc = token
+        .chars()
+        .last()
+        .map_or(false, |c| c.is_ascii_punctuation());
 
     // Utility function to push features based on a condition
     let add_feature = |features: &mut Vec<Attribute>, key: &str, condition: bool| {
@@ -141,7 +150,7 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
             },
         ),
         Attribute::new(
-            "word",
+            &format!("word={}", token_clean),
             if token.chars().any(|c| c.is_alphabetic()) {
                 1f64
             } else {
@@ -150,23 +159,20 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
         ),
         Attribute::new("length", n_chars as f64),
         Attribute::new(
-            "endsinpinc",
-            token
-                .chars()
-                .last()
-                .map_or(0f64, |c| c.is_ascii_punctuation() as u8 as f64),
+            &format!("endsinpunc={}", if endsinpunc { "True" } else { "False" }),
+            endsinpunc as u8 as f64,
         ),
     ];
 
     add_feature(
         &mut features,
         "street_name",
-        make_replacements(token, &STREET_NAMES),
+        make_replacements(&token.to_lowercase(), &STREET_NAMES),
     );
     add_feature(
         &mut features,
         "directional",
-        make_replacements(token, &DIRECTIONALS),
+        make_replacements(&token.to_lowercase(), &DIRECTIONALS),
     );
     add_feature(&mut features, "vowels", has_vowels);
 
