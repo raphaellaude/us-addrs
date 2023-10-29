@@ -6,8 +6,14 @@ use us_addrs::train::train_model;
 
 #[derive(Parser)]
 enum USAddrsCli {
-    Train,
+    Train(TrainArgs),
     Parse(ParseArgs),
+}
+
+#[derive(Parser)]
+struct TrainArgs {
+    #[clap(short, long)]
+    export_path: String,
 }
 
 #[derive(Parser)]
@@ -18,7 +24,7 @@ struct ParseArgs {
 
 fn main() {
     match USAddrsCli::parse() {
-        USAddrsCli::Train => match train_model() {
+        USAddrsCli::Train(args) => match train_model(&args.export_path) {
             Ok(()) => println!("Trained model"),
             Err(e) => println!("Error training model: {}", e),
         },

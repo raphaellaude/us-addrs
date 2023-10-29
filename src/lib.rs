@@ -41,6 +41,7 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
     let tokens = tokenize(address);
     let xseq = get_address_features(&tokens);
 
+    // debugging only
     for (token, features) in tokens.iter().zip(xseq.iter()) {
         println!("Token: {}", token);
         for feature in features {
@@ -48,7 +49,7 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
         }
     }
 
-    let model = crfsuite::Model::from_file("model/usaddr.crfsuite").unwrap();
+    let model = crfsuite::Model::from_file("model/test_usaddr.crfsuite").unwrap();
 
     let mut tagger = model.tagger().unwrap();
     let _res = tagger.tag(&xseq).unwrap();
@@ -141,6 +142,11 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
         .chars()
         .last()
         .map_or(false, |c| c.is_ascii_punctuation());
+    let digits = match numeric_digits {
+        d if d == n_chars => "all_digits",
+        d if d > 0 => "some_digits",
+        _ => "no_digits",
+    };
 
     // Utility function to push features based on a condition
     let add_feature = |features: &mut Vec<Attribute>, key: &str, condition: bool| {
@@ -164,11 +170,15 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
                 0f64
             },
         ),
-        Attribute::new("length", n_chars as f64),
         Attribute::new(
-            &format!("endsinpunc={}", if endsinpunc { "True" } else { "False" }),
-            endsinpunc as u8 as f64,
+            &format!(
+                "length={}:{}",
+                if digits == "all_digits" { "d" } else { "w" },
+                numeric_digits
+            ),
+            1f64,
         ),
+        Attribute::new("endsinpunc", endsinpunc as u8 as f64),
     ];
 
     add_feature(
@@ -203,7 +213,8 @@ pub fn clean_address(address: &str) -> String {
         .nfkd() // filter to ascii characters only, by closest
         .collect();
 
-    remove_insignificant_punctuation(&address)
+    // remove_insignificant_punctuation(&address)
+    address
 }
 
 pub fn clean_addresses(addresses: Vec<&str>) -> Vec<String> {
@@ -231,16 +242,11 @@ pub fn remove_insignificant_punctuation(address: &str) -> String {
 
             // periods, hyphens, and slashes are significant and should not be removed
             // except for hyphens in place names, which should be replaced with a space
-            let sig_alphanum = ['-', '.', '/'].contains(&c);
+            let sig_alphanum = ['-', '.', '/'].contains(&c); // and '#', '&', '½' ?
 
             if prev.is_numeric() && next.is_numeric() && sig_alphanum {
                 output.push(c);
                 continue;
-            }
-
-            if sig_alphanum {
-                output.push(' ');
-                // continue;
             }
         }
     }

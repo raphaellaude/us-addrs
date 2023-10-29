@@ -6,7 +6,7 @@ use xml::reader::{EventReader, XmlEvent};
 
 use crate::{get_address_features, tokenize};
 
-pub fn train_model() -> std::io::Result<()> {
+pub fn train_model(file_path: &str) -> std::io::Result<()> {
     let file = File::open("training/labeled.xml")?;
     let file = BufReader::new(file);
 
@@ -14,9 +14,13 @@ pub fn train_model() -> std::io::Result<()> {
 
     let mut trainer = Trainer::new(false);
 
+    match trainer.select(Algorithm::LBFGS, GraphicalModel::CRF1D) {
+        Ok(()) => (),
+        Err(e) => println!("Error selecting algorithm: {}", e),
+    }
+
     let mut address: Vec<String> = Vec::new();
-    let mut yseq: Vec<String> = Vec::new(); // make Vec<AddressComponent>
-                                            // let mut yseq: &[String];
+    let mut yseq: Vec<String> = Vec::new();
 
     for e in parser {
         match e {
@@ -33,13 +37,12 @@ pub fn train_model() -> std::io::Result<()> {
             }
             Ok(XmlEvent::EndElement { name }) => {
                 if name.local_name == "AddressString" {
-                    println!("Address: {:?}", address);
                     let tokens = tokenize(&address.join(" "));
                     let xseq = get_address_features(&tokens);
-                    println!("Tags: {:?}", yseq);
+                    assert_eq!(xseq.len(), yseq.len());
 
                     match trainer.append(&xseq, &yseq, 0) {
-                        Ok(()) => println!("Appended data"),
+                        Ok(()) => (),
                         Err(e) => {
                             eprintln!("Error appending data: {}", e);
                             break;
@@ -55,13 +58,8 @@ pub fn train_model() -> std::io::Result<()> {
         }
     }
 
-    match trainer.select(Algorithm::LBFGS, GraphicalModel::CRF1D) {
-        Ok(()) => println!("Selected algorithm"),
-        Err(e) => println!("Error selecting algorithm: {}", e),
-    }
-
-    match trainer.train("usaddr.crfsuite", -1) {
-        Ok(()) => println!("Trained model"),
+    match trainer.train(file_path, -1) {
+        Ok(()) => (),
         Err(e) => println!("Error training model: {}", e),
     }
 
