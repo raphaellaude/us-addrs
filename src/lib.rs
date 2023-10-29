@@ -41,14 +41,6 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
     let tokens = tokenize(address);
     let xseq = get_address_features(&tokens);
 
-    // debugging only
-    for (token, features) in tokens.iter().zip(xseq.iter()) {
-        println!("Token: {}", token);
-        for feature in features {
-            println!("Feature: {:?}", feature);
-        }
-    }
-
     let model = crfsuite::Model::from_file("model/test_usaddr.crfsuite").unwrap();
 
     let mut tagger = model.tagger().unwrap();
