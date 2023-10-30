@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-
 use crfsuite::Attribute;
+use lazy_static::lazy_static;
+use std::collections::HashMap;
 use unicode_normalization::UnicodeNormalization;
 mod abbreviations;
 pub mod train;
@@ -36,21 +36,24 @@ pub enum Tag {
     NotAddress,
 }
 
+lazy_static! {
+    pub static ref MODEL: crfsuite::Model =
+        crfsuite::Model::from_file("model/test_usaddr.crfsuite").unwrap();
+}
+
 /// Parse an unstructured U.S. address string into address components.
 pub fn parse(address: &str) -> Vec<(String, String)> {
     let tokens = tokenize(address);
     let xseq = get_address_features(&tokens);
 
-    let model = crfsuite::Model::from_file("model/test_usaddr.crfsuite").unwrap();
+    let mut tagger = MODEL.tagger().unwrap();
+    let tags = tagger.tag(&xseq).unwrap();
 
-    let mut tagger = model.tagger().unwrap();
-    let _res = tagger.tag(&xseq).unwrap();
+    zip_tokens_and_tags(tokens, tags)
+}
 
-    tokens
-        .into_iter()
-        .zip(_res.iter())
-        .map(|(token, tag)| (token, tag.to_string()))
-        .collect()
+pub fn zip_tokens_and_tags(tokens: Vec<String>, tags: Vec<String>) -> Vec<(String, String)> {
+    tokens.into_iter().zip(tags.into_iter()).collect()
 }
 
 pub fn get_address_features(tokens: &Vec<String>) -> Vec<Vec<Attribute>> {
@@ -130,10 +133,10 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
         .chars()
         .filter(|c| c.is_alphanumeric())
         .collect::<String>();
-    let endsinpunc = token
-        .chars()
-        .last()
-        .map_or(false, |c| c.is_ascii_punctuation());
+    let last_char = token.chars().last();
+    let endsinpunc = last_char.map_or(false, |c| c.is_ascii_punctuation());
+    let ends_in_period = last_char.map_or(false, |c| c == '.');
+    let trailing_zeros = last_char.map_or(false, |c| c == '0');
     let digits = match numeric_digits {
         d if d == n_chars => "all_digits",
         d if d > 0 => "some_digits",
@@ -147,10 +150,9 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
 
     let mut features = vec![
         Attribute::new(
-            "digits",
+            &format!("digits={}", digits),
             match numeric_digits {
-                d if d == n_chars => 1f64,
-                d if d > 0 => 0.5f64,
+                d if d > 0 => 1f64,
                 _ => 0f64,
             },
         ),
@@ -171,6 +173,8 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
             1f64,
         ),
         Attribute::new("endsinpunc", endsinpunc as u8 as f64),
+        Attribute::new("abbrev", ends_in_period as u8 as f64),
+        Attribute::new("trailing.zeros", trailing_zeros as u8 as f64),
     ];
 
     add_feature(
@@ -183,7 +187,7 @@ pub fn get_token_features(token: &str) -> Vec<Attribute> {
         "directional",
         make_replacements(&token.to_lowercase(), &DIRECTIONALS),
     );
-    add_feature(&mut features, "vowels", has_vowels);
+    add_feature(&mut features, "has.vowels", has_vowels);
 
     features
 }
