@@ -57,16 +57,12 @@ pub fn zip_tokens_and_tags(tokens: Vec<String>, tags: Vec<String>) -> Vec<(Strin
 }
 
 pub fn get_address_features(tokens: &Vec<String>) -> Vec<Vec<Attribute>> {
-    let mut xseq = Vec::new();
+    let xseq = tokens
+        .iter()
+        .map(|token| get_token_features(token))
+        .collect();
 
-    for token in tokens {
-        let features = get_token_features(token);
-        xseq.push(features);
-    }
-
-    let xseq = add_feature_context(xseq);
-
-    xseq
+    add_feature_context(xseq)
 }
 
 pub fn add_feature_context(features: Vec<Vec<Attribute>>) -> Vec<Vec<Attribute>> {
@@ -116,24 +112,36 @@ fn get_new_attributes(feature: &Vec<Attribute>, prefix: &str) -> Vec<Attribute> 
 
 pub fn tokenize(address: &str) -> Vec<String> {
     let address: String = clean_address(address);
-    let tokens: Vec<String> = address
-        .split([' ', ',', ';', ')', '\n'])
-        .filter(|&x| !x.is_empty())
+
+    address
+        .split([' ', ',', ';', ')', '\n'].as_ref())
+        .filter(|x| !x.is_empty())
         .map(|s| s.to_string())
-        .collect();
-    tokens
+        .collect()
 }
 
 pub fn get_token_features(token: &str) -> Vec<Attribute> {
-    let n_chars = token.chars().count();
-    let numeric_digits = token.chars().filter(|c| c.is_numeric()).count();
-    let has_vowels = token.chars().any(|c| "aeiou".contains(c));
+    let mut n_chars = 0;
+    let mut numeric_digits = 0;
+    let mut has_vowels = false;
+    let mut last_char = None;
+
+    for c in token.chars() {
+        n_chars += 1;
+        if c.is_numeric() {
+            numeric_digits += 1;
+        }
+        if "aeiou".contains(c) {
+            has_vowels = true;
+        }
+        last_char = Some(c);
+    }
+
     let token_clean = token
         .to_lowercase()
         .chars()
         .filter(|c| c.is_alphanumeric())
         .collect::<String>();
-    let last_char = token.chars().last();
     let endsinpunc = last_char.map_or(false, |c| c.is_ascii_punctuation());
     let ends_in_period = last_char.map_or(false, |c| c == '.');
     let trailing_zeros = last_char.map_or(false, |c| c == '0');
@@ -203,14 +211,7 @@ fn make_replacements(token: &str, replacements: &HashMap<&str, &str>) -> bool {
 /// - All punctuation is removed, except for periods, hyphens, and slashes EXCEPT when
 ///  they are surrounded by numbers, in which case they are retained
 pub fn clean_address(address: &str) -> String {
-    let address: String = address
-        .trim()
-        .chars()
-        .nfkd() // filter to ascii characters only, by closest
-        .collect();
-
-    // remove_insignificant_punctuation(&address)
-    address
+    address.trim().chars().nfkd().collect() // filter to ascii characters only, by closest
 }
 
 pub fn clean_addresses(addresses: Vec<&str>) -> Vec<String> {
