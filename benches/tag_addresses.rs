@@ -7,7 +7,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("tag");
 
     // Read raw data
-    let raw_data = fs::read_to_string("tests/us50.test.raw").unwrap();
+    let raw_data = fs::read_to_string("tests/test_data/us50.test.raw").unwrap();
     let data: Vec<&str> = raw_data.lines().collect();
 
     // Benchmark the whole function
