@@ -16,7 +16,7 @@ fn bench(c: &mut Criterion) {
     });
 
     c.bench_function("clean_address_batch", |b| {
-        let data = read_to_string("tests/test_addrs.txt").expect("Could not read file");
+        let data = read_to_string("tests/test_data/test_addrs.txt").expect("Could not read file");
         let data: Vec<&str> = data.lines().collect();
         b.iter_batched(
             || data.clone(),

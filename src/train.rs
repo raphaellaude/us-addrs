@@ -6,7 +6,7 @@ use xml::reader::{EventReader, XmlEvent};
 
 use crate::{get_address_features, tokenize};
 
-pub fn train_model(file_path: &str) -> std::io::Result<()> {
+pub fn train_model(export_path: &str) -> std::io::Result<()> {
     let file = File::open("training/labeled.xml")?;
     let file = BufReader::new(file);
 
@@ -58,7 +58,7 @@ pub fn train_model(file_path: &str) -> std::io::Result<()> {
         }
     }
 
-    match trainer.train(file_path, -1) {
+    match trainer.train(export_path, -1) {
         Ok(()) => (),
         Err(e) => println!("Error training model: {}", e),
     }

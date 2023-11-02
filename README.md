@@ -23,7 +23,7 @@ cargo run -- parse --address '33 Nassau Avenue, Brooklyn, NY'
 or by importing the crate and using the `parse` function
 
 ```rust
-let addresses = read_to_string("tests/test_addrs.txt").expect("Could not read file");
+let addresses = read_to_string("tests/test_data/test_addrs.txt").expect("Could not read file");
 let addresses: Vec<&str> = addresses.lines().collect();
 for (i, addr) in addresses.iter().enumerate() {
     let parsed = parse(addr);
