@@ -36,3 +36,18 @@ Test 1: Parsed address is [("123", "AddressNumber"), ("Elm", "StreetName"), ("St
 ```
 
 etc...
+
+## Accuracy
+
+Currently, the tool is very accurate for simple addresses, but mediocre at complex addresses. See test results:
+
+```
+running 4 tests
+test test_simple_address_patterns ... ok
+There were 34 mistagged address components of 782 (4.3%). 22 partially failed addresses of 103 (21.4%)
+test test_labeled ... ok
+There were 978 mistagged address components of 4627 (21.1%). 625 partially failed addresses of 687 (91.0%)
+test test_us50_tagged ... ok
+There were 151 mistagged address components of 20977 (0.7%). 139 partially failed addresses of 4120 (3.4%)
+test test_synthetic_clean_osm_data ... ok
+```
