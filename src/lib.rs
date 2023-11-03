@@ -10,33 +10,35 @@ pub mod train;
 
 use abbreviations::{DIRECTIONALS, STREET_NAMES};
 
-pub enum Tag {
-    AddressNumberPrefix,
-    AddressNumber,
-    AddressNumberSuffix,
-    StreetNamePreModifier,
-    StreetNamePreDirectional,
-    StreetNamePreType,
-    StreetName,
-    StreetNamePostType,
-    StreetNamePostDirectional,
-    SubaddressType,
-    SubaddressIdentifier,
-    BuildingName,
-    OccupancyType,
-    OccupancyIdentifier,
-    CornerOf,
-    LandmarkName,
-    PlaceName,
-    StateName,
-    ZipCode,
-    USPSBoxType,
-    USPSBoxID,
-    USPSBoxGroupType,
-    USPSBoxGroupID,
-    IntersectionSeparator,
-    Recipient,
-    NotAddress,
+lazy_static! {
+    pub static ref TAGS: [&'static str; 26] = [
+        "AddressNumberPrefix",
+        "AddressNumber",
+        "AddressNumberSuffix",
+        "StreetNamePreModifier",
+        "StreetNamePreDirectional",
+        "StreetNamePreType",
+        "StreetName",
+        "StreetNamePostType",
+        "StreetNamePostDirectional",
+        "SubaddressType",
+        "SubaddressIdentifier",
+        "BuildingName",
+        "OccupancyType",
+        "OccupancyIdentifier",
+        "CornerOf",
+        "LandmarkName",
+        "PlaceName",
+        "StateName",
+        "ZipCode",
+        "USPSBoxType",
+        "USPSBoxID",
+        "USPSBoxGroupType",
+        "USPSBoxGroupID",
+        "IntersectionSeparator",
+        "Recipient",
+        "NotAddress",
+    ];
 }
 
 lazy_static! {
@@ -53,6 +55,20 @@ pub fn parse(address: &str) -> Vec<(String, String)> {
     let tags = tagger.tag(&xseq).unwrap();
 
     zip_tokens_and_tags(tokens, tags)
+}
+
+pub fn parse_addresses(addresses: Vec<&str>) -> Vec<Vec<(String, String)>> {
+    addresses
+        .iter() // .iter is 42% faster than .par_iter()
+        .map(|address| parse(address))
+        .collect()
+}
+
+pub fn parse_addresses_from_txt(file_path: &str) -> Vec<Vec<(String, String)>> {
+    let raw_data = std::fs::read_to_string(file_path).unwrap();
+    let data: Vec<&str> = raw_data.lines().collect();
+
+    parse_addresses(data)
 }
 
 pub fn zip_tokens_and_tags(tokens: Vec<String>, tags: Vec<String>) -> Vec<(String, String)> {
