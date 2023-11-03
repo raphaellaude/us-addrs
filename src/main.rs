@@ -1,6 +1,6 @@
 use clap::Parser;
 use us_addrs::train::train_model;
-use us_addrs::{parse, parse_addresses_from_txt, TAGS};
+use us_addrs::{group_by_tag, parse, parse_addresses_from_txt, TAGS};
 
 // use std::path::PathBuf;
 
@@ -44,10 +44,11 @@ fn main() {
             wtr.write_record(TAGS.iter()).unwrap();
 
             for tagged_address in parsed_addresses {
+                let group_tagged_address = group_by_tag(tagged_address);
                 let mut record = Vec::new();
 
                 for tag in TAGS.iter() {
-                    if let Some((token, _)) = tagged_address
+                    if let Some((token, _)) = group_tagged_address
                         .iter()
                         .find(|&(_, token_tag)| *token_tag == *tag)
                     {

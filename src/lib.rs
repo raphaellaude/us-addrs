@@ -324,3 +324,21 @@ pub fn read_xml_tagged_addresses(file_path: &str) -> (Vec<String>, Vec<Vec<Strin
 
     (addresses, tags)
 }
+
+pub fn group_by_tag(tokens: Vec<(String, String)>) -> Vec<(String, String)> {
+    let mut result = Vec::new();
+    let mut tokens = tokens.into_iter().peekable();
+
+    while let Some((mut token, tag)) = tokens.next() {
+        while tokens
+            .peek()
+            .map_or(false, |(_, ref next_tag)| &tag == next_tag)
+        {
+            let (next_token, _) = tokens.next().unwrap();
+            token = format!("{} {}", token, next_token);
+        }
+        result.push((token, tag));
+    }
+
+    result
+}
