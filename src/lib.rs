@@ -137,6 +137,8 @@ pub fn tokenize(address: &str) -> Vec<String> {
     let address: String = clean_address(address);
 
     address
+        .replace('&', " & ")
+        .replace('#', " # ")
         .split([' ', ',', ';', ')', '\n'].as_ref())
         .filter(|x| !x.is_empty())
         .map(|s| s.to_string())

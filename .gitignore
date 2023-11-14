@@ -3,3 +3,6 @@
 scratch.rs
 data_prep
 *.csv
+.DS_Store
+profile.json
+/scratch
